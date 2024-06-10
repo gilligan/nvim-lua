@@ -21,6 +21,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.undofile = false
+vim.opt.swapfile = false
 
 -- [[ Basic Keymaps ]]
 
@@ -90,12 +91,13 @@ require('lazy').setup({
   {
     'NeogitOrg/neogit',
     dependencies = {
-      'nvim-lua/plenary.nvim', -- required
-      'sindrets/diffview.nvim', -- optional - Diff integration
+      'nvim-lua/plenary.nvim',         -- required
+      'sindrets/diffview.nvim',        -- optional - Diff integration
       'nvim-telescope/telescope.nvim', -- optional
-      'ibhagwan/fzf-lua', -- optional
+      'ibhagwan/fzf-lua',              -- optional
     },
     config = true,
+    tag = "v0.0.1"
   },
   {
     'ibhagwan/fzf-lua',
@@ -103,7 +105,7 @@ require('lazy').setup({
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       -- calling `setup` is optional for customization
-      require('fzf-lua').setup {}
+      require('fzf-lua').setup { defaults = { winopts = { height = 0.33, width = 0.33, preview = { hidden = 'hidden' } } } }
       vim.keymap.set('n', '<c-P>', "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
       vim.keymap.set('n', '<c-G>', "<cmd>lua require('fzf-lua').git_files()<CR>", { silent = true })
     end,
@@ -174,7 +176,7 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -412,12 +414,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use a sub-list to tell conform to run *until* a formatter
-        -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
+        nix = { 'nixpkgs_fmt' }
       },
     },
   },
@@ -478,9 +475,9 @@ require('lazy').setup({
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<C-n>'] = cmp.mapping.select_next_item(),
+          --['<C-n>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          --['<C-p>'] = cmp.mapping.select_prev_item(),
 
           -- Scroll the documentation window [b]ack / [f]orward
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -493,9 +490,9 @@ require('lazy').setup({
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -532,7 +529,7 @@ require('lazy').setup({
       }
     end,
   },
-  { 'folke/trouble.nvim', dependencies = { 'nvim-tree/nvim-web-devicons' }, opts = {} },
+  { 'folke/trouble.nvim',       dependencies = { 'nvim-tree/nvim-web-devicons' }, opts = {} },
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -548,7 +545,7 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  { 'folke/todo-comments.nvim', event = 'VimEnter',                               dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -641,6 +638,18 @@ local lspconfig = require 'lspconfig'
 lspconfig.util.on_setup = lspconfig.util.add_hook_before(lspconfig.util.on_setup, function(config)
   config.cmd = { 'direnv', 'exec', '.', unpack(config.cmd) }
 end)
+
+lspconfig.nil_ls.setup {
+  autostart = true,
+  cmd = { "nil" },
+  settings = {
+    ['nil'] = {
+      formatting = {
+        command = { "nixpkgs-fmt" }
+      }
+    }
+  }
+}
 
 lspconfig.lua_ls.setup {}
 
